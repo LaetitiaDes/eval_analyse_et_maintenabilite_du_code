@@ -6,10 +6,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RentalTest {
 
+    /**
+     * This test checks the creation of a Rental object and verifies
+     * that the number of rental days and the associated Car object
+     * are correctly initialized and retrieved
+     */
     @Test
     void testRentalCreation() {
         // Creating a Car and Rental object
-        Car car = new Car("Test Car", Car.REGULAR);
+        Car car = CarFactory.createCar("Test Car", Car.REGULAR);
         Rental rental = new Rental(car, 5);
 
         // Check that rental days are correctly initialized and retrieve

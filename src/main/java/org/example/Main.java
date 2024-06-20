@@ -5,6 +5,64 @@ import com.google.gson.GsonBuilder;
 
 import java.util.*;
 
+/**
+ * PricingRule is an interface for calculating the rental amount based on the number of days rented.
+ */
+interface PricingRule {
+    double calculateRentalAmount(int daysRented);
+}
+
+/**
+ * RegularPricingRule implements the pricing rule for regular cars.
+ */
+class RegularPricingRule implements PricingRule {
+    @Override
+    public double calculateRentalAmount(int daysRented) {
+        double thisAmount = 5000 + daysRented * 9500;
+        if (daysRented > 5) {
+            thisAmount -= (daysRented - 2) * 10000;
+        }
+        return thisAmount;
+    }
+}
+
+/**
+ * NewModelPricingRule implements the pricing rule for new model cars.
+ */
+class NewModelPricingRule implements PricingRule {
+    @Override
+    public double calculateRentalAmount(int daysRented) {
+        double thisAmount = 9000 + daysRented * 15000;
+        if (daysRented > 3) {
+            thisAmount -= (daysRented - 2) * 10000;
+        }
+        return thisAmount;
+    }
+}
+
+/**
+ * CarFactory is responsible for creating Car objects with the appropriate pricing rule based on the price code.
+ */
+class CarFactory {
+    public static Car createCar(String title, int priceCode) {
+        PricingRule pricingRule;
+        switch (priceCode) {
+            case Car.REGULAR:
+                pricingRule = new RegularPricingRule();
+                break;
+            case Car.NEW_MODEL:
+                pricingRule = new NewModelPricingRule();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid price code");
+        }
+        return new Car(title, priceCode, pricingRule);
+    }
+}
+
+/**
+ * Car represents a car available for rental.
+ */
 class Car {
     public static final int REGULAR = 0;
     public static final int NEW_MODEL = 1;
@@ -12,9 +70,12 @@ class Car {
     private String title;
     private int priceCode;
 
-    public Car(String title, int priceCode) {
+    private PricingRule pricingRule;
+
+    public Car(String title, int priceCode, PricingRule pricingRule) {
         this.title = title;
         this.priceCode = priceCode;
+        this.pricingRule = pricingRule;
     }
 
     public int getPriceCode() {
@@ -25,11 +86,18 @@ class Car {
         this.priceCode = priceCode;
     }
 
+    public PricingRule getPricingRule() {
+        return pricingRule;
+    }
+
     public String getTitle() {
         return title;
     }
 }
 
+/**
+ * Rental represents a rental of a car for a specified number of days.
+ */
 class Rental {
     private Car car;
     private int daysRented;
@@ -48,6 +116,9 @@ class Rental {
     }
 }
 
+/**
+ * Customer represents a customer who rents cars.
+ */
 class Customer {
     private String name;
     private List<Rental> rentals = new ArrayList<>();
@@ -64,29 +135,16 @@ class Customer {
         return name;
     }
 
+    /**
+     * Generates a textual invoice for the customer's rentals.
+     */
     public String invoice() {
         double totalAmount = 0.0;
         int frequentRenterPoints = 0;
         StringBuilder result = new StringBuilder("Rental Record for " + getName() + "\n");
 
         for (Rental each : rentals) {
-            double thisAmount = 0.0;
-
-            // Determine amounts for each line
-            switch (each.getCar().getPriceCode()) {
-                case Car.REGULAR:
-                    thisAmount += 5000 + each.getDaysRented() * 9500;
-                    if (each.getDaysRented() > 5) {
-                        thisAmount -= (each.getDaysRented() - 2) * 10000;
-                    }
-                    break;
-                case Car.NEW_MODEL:
-                    thisAmount += 9000 + each.getDaysRented() * 15000;
-                    if (each.getDaysRented() > 3) {
-                        thisAmount -= (each.getDaysRented() - 2) * 10000;
-                    }
-                    break;
-            }
+            double thisAmount = each.getCar().getPricingRule().calculateRentalAmount(each.getDaysRented());
 
             // Add frequent renter points
             frequentRenterPoints++;
@@ -108,28 +166,16 @@ class Customer {
         return result.toString();
     }
 
+    /**
+     * Generates a JSON invoice for the customer's rentals.
+     */
     public String invoiceJSON() {
         double totalAmount = 0.0;
         int frequentRenterPoints = 0;
         List<Map<String, Object>> rentalsList = new ArrayList<>();
 
         for (Rental each : rentals) {
-            double thisAmount = 0.0;
-
-            switch (each.getCar().getPriceCode()) {
-                case Car.REGULAR:
-                    thisAmount += 5000 + each.getDaysRented() * 9500;
-                    if (each.getDaysRented() > 5) {
-                        thisAmount -= (each.getDaysRented() - 2) * 10000;
-                    }
-                    break;
-                case Car.NEW_MODEL:
-                    thisAmount += 9000 + each.getDaysRented() * 15000;
-                    if (each.getDaysRented() > 3) {
-                        thisAmount -= (each.getDaysRented() - 2) * 10000;
-                    }
-                    break;
-            }
+            double thisAmount = each.getCar().getPricingRule().calculateRentalAmount(each.getDaysRented());
 
             frequentRenterPoints++;
 
@@ -159,11 +205,14 @@ class Customer {
     }
 }
 
+/**
+ * Main class demonstrating the creation of cars, rentals, and customers, and generating invoices.
+ */
 // Example usage:
 public class Main {
     public static void main(String[] args) {
-        Car car1 = new Car("Car 1", Car.REGULAR);
-        Car car2 = new Car("Car 2", Car.NEW_MODEL);
+        Car car1 = CarFactory.createCar("Car 1", Car.REGULAR);
+        Car car2 = CarFactory.createCar("Car 2", Car.NEW_MODEL);
 
         Rental rental1 = new Rental(car1, 3);
         Rental rental2 = new Rental(car2, 2);
