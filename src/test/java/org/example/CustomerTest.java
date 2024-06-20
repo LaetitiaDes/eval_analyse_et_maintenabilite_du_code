@@ -70,12 +70,15 @@ class CustomerTest {
         customer.addRental(rental1);
         customer.addRental(rental2);
 
+        // Calculate expected frequent renter points
+        int expectedFrequentRenterPoints = (int) Math.round((car1.getPricingRule().calculateRentalAmount(5) + car2.getPricingRule().calculateRentalAmount(2)) * 0.1 / 100);
+
         // Expected invoice result
         String expectedInvoice = "Rental Record for Tifa Lockhart\n" +
                 "\tCar 1\t" + String.format("%.1f", car1.getPricingRule().calculateRentalAmount(5) / 100) + "\n" +
                 "\tCar 2\t" + String.format("%.1f", car2.getPricingRule().calculateRentalAmount(2) / 100) + "\n" +
                 "Amount owed is " + String.format("%.1f", (car1.getPricingRule().calculateRentalAmount(5) + car2.getPricingRule().calculateRentalAmount(2)) / 100) + "\n" +
-                "You earned 3 frequent renter points\n";
+                "You earned " + expectedFrequentRenterPoints + " frequent renter points\n";
 
         // Check that the generated invoice is correct
         assertEquals(expectedInvoice, customer.invoice());
@@ -101,6 +104,9 @@ class CustomerTest {
         customer.addRental(rental1);
         customer.addRental(rental2);
 
+        // Calculate expected frequent renter points
+        int expectedFrequentRenterPoints = (int) Math.round((car1.getPricingRule().calculateRentalAmount(5) + car2.getPricingRule().calculateRentalAmount(2)) * 0.1 / 100);
+
         // Expected invoice result in JSON format
         String expectedInvoiceJson = "{\n" +
                 "  \"record\": \"Rental Record for Tifa Lockhart\",\n" +
@@ -115,7 +121,7 @@ class CustomerTest {
                 "    }\n" +
                 "  ],\n" +
                 "  \"totalAmount\": \"" + String.format("%.1f", (car1.getPricingRule().calculateRentalAmount(5) + car2.getPricingRule().calculateRentalAmount(2)) / 100) + "\",\n" +
-                "  \"frequentRenterPoints\": 3\n" +
+                "  \"frequentRenterPoints\": " + expectedFrequentRenterPoints + "\n" +
                 "}";
 
         // Check that the generated invoice is correct

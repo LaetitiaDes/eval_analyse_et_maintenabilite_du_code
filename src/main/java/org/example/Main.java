@@ -159,6 +159,9 @@ class Customer {
             totalAmount += thisAmount;
         }
 
+        // Add loyalty points based on the total rental amount
+        frequentRenterPoints = (int) Math.round((totalAmount / 100) * 0.1);
+
         // Add footer lines
         result.append("Amount owed is ").append(String.format("%.1f", totalAmount / 100)).append("\n");
         result.append("You earned ").append(frequentRenterPoints).append(" frequent renter points\n");
@@ -191,6 +194,9 @@ class Customer {
 
             totalAmount += thisAmount;
         }
+
+        // Add loyalty points based on the total rental amount
+        frequentRenterPoints = (int) Math.round((totalAmount / 100) * 0.1);
 
         // Create final map
         Map<String, Object> invoiceMap = new LinkedHashMap<>();
