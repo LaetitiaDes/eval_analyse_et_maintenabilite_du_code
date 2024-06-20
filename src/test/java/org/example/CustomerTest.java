@@ -65,4 +65,40 @@ class CustomerTest {
 
         System.out.println("Generated Invoice:\n" + customer.invoice());
     }
+
+    @Test
+    void testInvoiceJSON() {
+        // Creation of several Car and Rental objects
+        Car car1 = new Car("Car 1", Car.REGULAR);
+        Car car2 = new Car("Car 2", Car.NEW_MODEL);
+
+        Rental rental1 = new Rental(car1, 5);
+        Rental rental2 = new Rental(car2, 2);
+
+        // Add rentals to the customer
+        customer.addRental(rental1);
+        customer.addRental(rental2);
+
+        // Expected invoice json result
+        String expectedInvoiceJson = "{\n" +
+                "  \"record\": \"Rental Record for Tifa Lockhart\",\n" +
+                "  \"rentals\": [\n" +
+                "    {\n" +
+                "      \"title\": \"Car 1\",\n" +
+                "      \"amount\": \"525,0\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"title\": \"Car 2\",\n" +
+                "      \"amount\": \"390,0\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"totalAmount\": \"915,0\",\n" +
+                "  \"frequentRenterPoints\": 3\n" +
+                "}";
+
+        // Check that the generated invoice is correct
+        assertEquals(expectedInvoiceJson, customer.invoiceJSON());
+
+        System.out.println("Invoice generated in Json format:\n" + customer.invoiceJSON());
+    }
 }

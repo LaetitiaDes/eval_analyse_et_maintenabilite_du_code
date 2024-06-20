@@ -1,7 +1,9 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.util.*;
 
 class Car {
     public static final int REGULAR = 0;
@@ -105,6 +107,56 @@ class Customer {
 
         return result.toString();
     }
+
+    public String invoiceJSON() {
+        double totalAmount = 0.0;
+        int frequentRenterPoints = 0;
+        List<Map<String, Object>> rentalsList = new ArrayList<>();
+
+        for (Rental each : rentals) {
+            double thisAmount = 0.0;
+
+            switch (each.getCar().getPriceCode()) {
+                case Car.REGULAR:
+                    thisAmount += 5000 + each.getDaysRented() * 9500;
+                    if (each.getDaysRented() > 5) {
+                        thisAmount -= (each.getDaysRented() - 2) * 10000;
+                    }
+                    break;
+                case Car.NEW_MODEL:
+                    thisAmount += 9000 + each.getDaysRented() * 15000;
+                    if (each.getDaysRented() > 3) {
+                        thisAmount -= (each.getDaysRented() - 2) * 10000;
+                    }
+                    break;
+            }
+
+            frequentRenterPoints++;
+
+            if (each.getCar().getPriceCode() == Car.NEW_MODEL && each.getDaysRented() > 1) {
+                frequentRenterPoints++;
+            }
+
+            // Add rental info to list
+            Map<String, Object> rentalMap = new LinkedHashMap<>();
+            rentalMap.put("title", each.getCar().getTitle());
+            rentalMap.put("amount", String.format("%.1f", thisAmount / 100));
+            rentalsList.add(rentalMap);
+
+            totalAmount += thisAmount;
+        }
+
+        // Create final map
+        Map<String, Object> invoiceMap = new LinkedHashMap<>();
+        invoiceMap.put("record", "Rental Record for " + getName());
+        invoiceMap.put("rentals", rentalsList);
+        invoiceMap.put("totalAmount", String.format("%.1f", totalAmount / 100));
+        invoiceMap.put("frequentRenterPoints", frequentRenterPoints);
+
+        // Convert map to JSON string
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(invoiceMap);
+    }
 }
 
 // Example usage:
@@ -121,5 +173,6 @@ public class Main {
         customer.addRental(rental2);
 
         System.out.println(customer.invoice());
+        System.out.println(customer.invoiceJSON());
     }
 }
